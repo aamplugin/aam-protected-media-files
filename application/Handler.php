@@ -188,7 +188,6 @@ class Handler
             header("Last-Modified: $last_modified GMT");
             header("ETag: {$etag}");
             header('Expires: ' . gmdate('D, d M Y H:i:s', time() + 100000000) . ' GMT');
-            header('X-Robots-Tag: none');
 
             // Finally read the file
             readfile($filename);
