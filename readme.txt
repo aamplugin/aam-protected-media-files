@@ -5,7 +5,7 @@ Requires at least: 4.7.0
 Requires PHP: 5.6.0
 License: GPLv2 or later
 Tested up to: 5.3
-Stable tag: 1.0.0
+Stable tag: 1.1.0
 
 Add-on to the free Advanced Access Manager plugin that protects media files from direct access for visitors, roles or users
 
@@ -36,6 +36,10 @@ For more information about how properly install and use it, refer to [How to Man
 2. Restrict access to media file while editing it
 
 == Changelog ==
+
+= 1.1.0 =
+* Fixed Bug: AAM URI Access access options were not honored for stand-alone files in the `uploads` folder
+* Added New: Introduced new AAM settings that enables Access Denied Redirect service when access is denied to protected files
 
 = 1.0.0 =
 * Initial version

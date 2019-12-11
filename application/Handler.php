@@ -67,19 +67,31 @@ class Handler
      *
      * @return void
      *
+     * @since 1.1.0 Added the ability to invoke AAM Access Denied Redirect service
+     * @since 1.0.0 Initial implementation of the method
+     *
      * @access public
-     * @version 1.0.0
+     * @version 1.1.0
      */
     public function authorize()
     {
         if (apply_filters('aam_media_request_filter', true, $this->request)) {
             $media = $this->findMedia();
 
+            // First, let's check if URI is restricted
+            \AAM_Service_Uri::getInstance()->authorizeUri();
+
             if ($media === null) { // File is not part of the Media library
                 $this->_outputFile(ABSPATH . $this->request);
             } else {
                 if ($media->is('restricted')) {
-                    http_response_code(401); exit;
+                    if (\AAM::api()->getConfig(
+                        'addon.protected-media-files.settings.deniedRedirect', false
+                    )) {
+                        wp_die('Access Denied', 'aam_access_denied');
+                    } else {
+                        http_response_code(401); exit;
+                    }
                 } else {
                     $this->outputMediaFile($media);
                 }

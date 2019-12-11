@@ -3,7 +3,7 @@
 /**
  * Plugin Name: AAM Protected Media Files
  * Description: Manage access to a physical file and prevent from a direct access
- * Version: 1.0.0
+ * Version: 1.1.0
  * Author: Vasyl Martyniuk <vasyl@vasyltech.com>
  * Author URI: https://vasyltech.com
  *
@@ -19,9 +19,13 @@ require_once __DIR__ . '/application/Handler.php';
 /**
  * Main add-on's bootstrap class
  *
+ * @since 1.1.0 Deeper integration with AAM core services (URI Access & Access
+ *              Denied Redirect)
+ * @since 1.0.0 Initial implementation of the method
+ *
  * @package AAM\AddOn\ProtectedMediaFiles
  * @author Vasyl Martyniuk <vasyl@vasyltech.com>
- * @version 1.0.0
+ * @version 1.1.0
  */
 class Bootstrap
 {
@@ -41,11 +45,48 @@ class Bootstrap
      *
      * @return void
      *
+     * @since 1.1.0 Adding new setting to the AAM Settings area
+     * @since 1.0.0 Initial implementation of the method
+     *
      * @access protected
-     * @version 1.0.0
+     * @version 1.1.0
      */
     protected function __construct()
     {
+        if (is_admin()) {
+            add_filter(
+                'aam_settings_list_filter',
+                array($this, 'registerContentOptions'),
+                10,
+                2
+            );
+        }
+    }
+
+    /**
+     * Extend AAM Settings "Content" tab with additional option
+     *
+     * @param array  $options
+     * @param string $type
+     *
+     * @return array
+     *
+     * @access public
+     * @version 1.1.0
+     */
+    public function registerContentOptions($options, $type)
+    {
+        if ($type === 'content') {
+            $options['addon.protected-media-files.settings.deniedRedirect'] = array(
+                'title'       => __('Invoke Access Denied Redirect'),
+                'description' => __('By default, when access is denied, HTTP 401 (Unauthorized) response is returned. By enabling this option, a request will be redirected based on the Access Denied Redirect rule.'),
+                'value'       => \AAM::api()->getConfig(
+                    'addon.protected-media-files.settings.deniedRedirect', false
+                )
+            );
+        }
+
+        return $options;
     }
 
     /**
