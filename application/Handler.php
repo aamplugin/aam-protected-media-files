@@ -12,9 +12,13 @@ namespace AAM\AddOn\ProtectedMediaFiles;
 /**
  * File access handler
  *
+ * @since 1.1.1 Fixed couple bugs related to redirect and file finding
+ * @since 1.1.0 Added deeper integration with AAM for access denied redirect
+ * @since 1.0.0 Initial implementation of the class
+ *
  * @package AAM\AddOn\ProtectedMediaFiles
  * @author Vasyl Martyniuk <vasyl@vasyltech.com>
- * @version 1.0.0
+ * @version 1.1.1
  */
 class Handler
 {
@@ -67,11 +71,13 @@ class Handler
      *
      * @return void
      *
+     * @since 1.1.1 Fixed issue with incorrectly redirected user when access is
+     *              denied
      * @since 1.1.0 Added the ability to invoke AAM Access Denied Redirect service
      * @since 1.0.0 Initial implementation of the method
      *
      * @access public
-     * @version 1.1.0
+     * @version 1.1.1
      */
     public function authorize()
     {
@@ -88,7 +94,11 @@ class Handler
                     if (\AAM::api()->getConfig(
                         'addon.protected-media-files.settings.deniedRedirect', false
                     )) {
-                        wp_die('Access Denied', 'aam_access_denied');
+                        wp_die(
+                            'Access Denied',
+                            'aam_access_denied',
+                            array('exit' => true)
+                        );
                     } else {
                         http_response_code(401); exit;
                     }
@@ -106,29 +116,40 @@ class Handler
      *
      * @return AAM_Core_Object_Post|null
      *
+     * @since 1.1.1 Covered the edge case when file name is somename-nnnxnnn
+     * @since 1.0.0 Initial implementation of the method
+     *
      * @access protected
      * @global WPDB $wpdb
-     * @version 1.0.0
+     * @version 1.1.1
      */
     protected function findMedia()
     {
         global $wpdb;
 
+        $file_path = ABSPATH . $this->request;
+
         // 1. Replace the cropped extension for images
-        $s = preg_replace('/(-[\d]+x[\d]+)(\.[\w]+)$/', '$2', ABSPATH . $this->request);
+        $s = preg_replace('/(-[\d]+x[\d]+)(\.[\w]+)$/', '$2', $file_path);
 
         // 2. Replace the path to the media
         $basedir = wp_upload_dir();
 
+        // Covering the scenario when filename is actually something like
+        // 2019/11/banner-1544x500.png
+        $relpath_base = str_replace($basedir['basedir'], '', $s);
+        $relpath_full = str_replace($basedir['basedir'], '', $file_path);
+
         $pm_query  = "SELECT post_id FROM {$wpdb->postmeta} WHERE meta_key = %s ";
-        $pm_query .= "AND meta_value = %s";
+        $pm_query .= "AND (meta_value = %s OR meta_value = %s)";
 
         $id = $wpdb->get_var(
             $wpdb->prepare(
                 $pm_query,
                 array(
                     '_wp_attached_file',
-                    ltrim(str_replace($basedir['basedir'], '', $s), '/')
+                    ltrim($relpath_base, '/'),
+                    ltrim($relpath_full, '/')
                 )
             )
         );
