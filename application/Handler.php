@@ -12,13 +12,16 @@ namespace AAM\AddOn\ProtectedMediaFiles;
 /**
  * File access handler
  *
+ * @since 1.1.3 Fixed bug with not properly managed access when website is in
+ *              subfolder
+ * @since 1.1.2 Fixed bug with incorrectly returned image size
  * @since 1.1.1 Fixed couple bugs related to redirect and file finding
  * @since 1.1.0 Added deeper integration with AAM for access denied redirect
  * @since 1.0.0 Initial implementation of the class
  *
  * @package AAM\AddOn\ProtectedMediaFiles
  * @author Vasyl Martyniuk <vasyl@vasyltech.com>
- * @version 1.1.1
+ * @version 1.1.3
  */
 class Handler
 {
@@ -71,43 +74,41 @@ class Handler
      *
      * @return void
      *
+     * @since 1.1.3 Changed the way full path is computed
+     * @since 1.1.2 Fixed bug with incorrectly returned image size
      * @since 1.1.1 Fixed issue with incorrectly redirected user when access is
      *              denied
      * @since 1.1.0 Added the ability to invoke AAM Access Denied Redirect service
      * @since 1.0.0 Initial implementation of the method
      *
      * @access public
-     * @version 1.1.1
+     * @version 1.1.3
      */
     public function authorize()
     {
-        if (apply_filters('aam_media_request_filter', true, $this->request)) {
-            $media = $this->findMedia();
+        // First, let's check if URI is restricted
+        \AAM_Service_Uri::getInstance()->authorizeUri();
 
-            // First, let's check if URI is restricted
-            \AAM_Service_Uri::getInstance()->authorizeUri();
+        $media = $this->findMedia();
 
-            if ($media === null) { // File is not part of the Media library
-                $this->_outputFile(ABSPATH . $this->request);
-            } else {
-                if ($media->is('restricted')) {
-                    if (\AAM::api()->getConfig(
-                        'addon.protected-media-files.settings.deniedRedirect', false
-                    )) {
-                        wp_die(
-                            'Access Denied',
-                            'aam_access_denied',
-                            array('exit' => true)
-                        );
-                    } else {
-                        http_response_code(401); exit;
-                    }
-                } else {
-                    $this->outputMediaFile($media);
-                }
-            }
+        if ($media === null) { // File is not part of the Media library
+            $this->_outputFile($this->_getFileFullpath());
         } else {
-            $this->outputMediaFile($media);
+            if ($media->is('restricted')) {
+                if (\AAM::api()->getConfig(
+                    'addon.protected-media-files.settings.deniedRedirect', false
+                )) {
+                    wp_die(
+                        'Access Denied',
+                        'aam_access_denied',
+                        array('exit' => true)
+                    );
+                } else {
+                    http_response_code(401); exit;
+                }
+            } else {
+                $this->_outputFile($this->_getFileFullpath());
+            }
         }
     }
 
@@ -116,18 +117,19 @@ class Handler
      *
      * @return AAM_Core_Object_Post|null
      *
+     * @since 1.1.3 Changed the way full path is computed
      * @since 1.1.1 Covered the edge case when file name is somename-nnnxnnn
      * @since 1.0.0 Initial implementation of the method
      *
      * @access protected
      * @global WPDB $wpdb
-     * @version 1.1.1
+     * @version 1.1.3
      */
     protected function findMedia()
     {
         global $wpdb;
 
-        $file_path = ABSPATH . $this->request;
+        $file_path = $this->_getFileFullpath();
 
         // 1. Replace the cropped extension for images
         $s = preg_replace('/(-[\d]+x[\d]+)(\.[\w]+)$/', '$2', $file_path);
@@ -169,24 +171,19 @@ class Handler
     }
 
     /**
-     * Output media file
+     * Compute correct physical location to the file
      *
-     * @param WP_Post $media
+     * @return string
      *
-     * @access protected
-     * @version 1.0.0
+     * @access private
+     * @version 1.1.3
      */
-    protected function outputMediaFile($media)
+    private function _getFileFullpath()
     {
-        $mime      = $media->post_mime_type;
-        $file_path = get_attached_file($media->ID); // This can be buggy!
+        $root = $this->getFromServer('DOCUMENT_ROOT');
+        $base = (empty($root) ? ABSPATH : $root . '/');
 
-        if (empty($file_path) || !file_exists($file_path)) {
-            $file_path = ABSPATH . $this->request;
-        }
-
-        // Normalize path and strip all unexpected trails
-        $this->_outputFile($file_path, $mime);
+        return $base . $this->request;
     }
 
     /**

@@ -4,8 +4,8 @@ Tags: protected media, files, protected videos, documents, media library
 Requires at least: 4.7.0
 Requires PHP: 5.6.0
 License: GPLv2 or later
-Tested up to: 5.3.1
-Stable tag: 1.1.1
+Tested up to: 5.3.2
+Stable tag: 1.1.3
 
 Add-on to the free Advanced Access Manager plugin that protects media files from direct access for visitors, roles or users
 
@@ -36,6 +36,12 @@ For more information about how properly install and use it, refer to [How to Man
 2. Restrict access to media file while editing it
 
 == Changelog ==
+
+= 1.1.3 =
+* Fixed Bug: Incorrectly computed physical path to a file when website is located in subfolder
+
+= 1.1.2 =
+* Fixed Bug: Incorrectly returned image size [https://forum.aamplugin.com/d/448-wrong-image-sizes-are-returned-with-aam-protected-media-files-plugin-enabled](https://forum.aamplugin.com/d/448-wrong-image-sizes-are-returned-with-aam-protected-media-files-plugin-enabled)
 
 = 1.1.1 =
 * Fixed Bug: User was not redirecting properly when access was denied. Incorrectly handled HTTP redirecting
