@@ -12,6 +12,8 @@ namespace AAM\AddOn\ProtectedMediaFiles;
 /**
  * File access handler
  *
+ * @since 1.1.4 Fixed bug with incorrectly computed path when DOCUMENT_ROOT does not
+ *              match actual physical path
  * @since 1.1.3 Fixed bug with not properly managed access when website is in
  *              subfolder
  * @since 1.1.2 Fixed bug with incorrectly returned image size
@@ -21,7 +23,7 @@ namespace AAM\AddOn\ProtectedMediaFiles;
  *
  * @package AAM\AddOn\ProtectedMediaFiles
  * @author Vasyl Martyniuk <vasyl@vasyltech.com>
- * @version 1.1.3
+ * @version 1.1.4
  */
 class Handler
 {
@@ -175,15 +177,25 @@ class Handler
      *
      * @return string
      *
+     * @since 1.1.4 Fixed bug with incorrectly computed physical path if DOCUMENT_ROOT
+     *              does not match actual physical path
+     * @since 1.1.3 Initial implementation of the method
+     *
      * @access private
-     * @version 1.1.3
+     * @version 1.1.4
      */
     private function _getFileFullpath()
     {
-        $root = $this->getFromServer('DOCUMENT_ROOT');
-        $base = (empty($root) ? ABSPATH : $root . '/');
+        // Get the sub dir path if website is located in subdirectory
+        $sub_folder = ltrim(dirname($this->getFromServer('PHP_SELF')), '/');
 
-        return $base . $this->request;
+        if (strpos($this->request, $sub_folder . '/') === 0) {
+            $request = substr($this->request, strlen($sub_folder) + 1);
+        } else {
+            $request = $this->request;
+        }
+
+        return ABSPATH . $request;
     }
 
     /**

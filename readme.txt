@@ -5,7 +5,7 @@ Requires at least: 4.7.0
 Requires PHP: 5.6.0
 License: GPLv2 or later
 Tested up to: 5.3.2
-Stable tag: 1.1.3
+Stable tag: 1.1.4
 
 Add-on to the free Advanced Access Manager plugin that protects media files from direct access for visitors, roles or users
 
@@ -36,6 +36,9 @@ For more information about how properly install and use it, refer to [How to Man
 2. Restrict access to media file while editing it
 
 == Changelog ==
+
+= 1.1.4 =
+* Fixed Bug: Incorrectly computed file path on NGINX servers
 
 = 1.1.3 =
 * Fixed Bug: Incorrectly computed physical path to a file when website is located in subfolder
