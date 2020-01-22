@@ -67,6 +67,17 @@ class Handler
             $request = $media;
         }
 
+        // Hooking into URI Access Service
+        add_filter('aam_uri_match_filter', function($match, $uri, $s) {
+            $media = $this->getFromQuery('aam-media');
+
+            if (empty($match) && !empty($media)) {
+                $match = ($uri === $media);
+            }
+
+            return $match;
+        }, 100, 3);
+
         // Stripping any query params
         $this->request = ltrim(preg_replace('/(\?.*|#)$/', '', $request), '/');
     }
