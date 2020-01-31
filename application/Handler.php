@@ -53,9 +53,11 @@ class Handler
      *
      * @return void
      *
-     * @access protected
+     * @since 1.1.5 Fixed bug https://github.com/aamplugin/advanced-access-manager/issues/33
+     * @since 1.0.0 Initial implementation of the service
      *
-     * @version 1.0.0
+     * @access protected
+     * @version 1.1.5
      */
     protected function __construct()
     {
