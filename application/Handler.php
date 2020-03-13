@@ -228,12 +228,15 @@ class Handler
      *
      * @return void
      *
+     * @since 1.1.6 Fixed https://github.com/aamplugin/aam-protected-media-files/issues/3
+     * @since 1.0.0 Initial implementation of the method
+     *
      * @access private
-     * @version 1.0.0
+     * @version 1.1.6
      */
     private function _outputFile($filename, $mime = null)
     {
-        if ($this->isAllowed($filename)) {
+        if ($this->_isAllowed(realpath($filename))) {
             if (empty($mime)) {
                 if (function_exists('mime_content_type')) {
                     $mime = mime_content_type($filename);
@@ -269,10 +272,13 @@ class Handler
      *
      * @return boolean
      *
+     * @since 1.1.6 Renamed from `isAllowed`
+     * @since 1.0.0 Initial implementation of the method
+     *
      * @access private
      * @version 1.0.0
      */
-    private function isAllowed($filename)
+    private function _isAllowed($filename)
     {
         // Check if file extension is valid
         $type_check = wp_check_filetype(basename($filename));
