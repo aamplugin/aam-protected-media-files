@@ -5,7 +5,7 @@ Requires at least: 4.7.0
 Requires PHP: 5.6.0
 License: GPLv2 or later
 Tested up to: 5.3.2
-Stable tag: 1.1.5
+Stable tag: 1.1.6
 
 Add-on to the free Advanced Access Manager plugin that protects media files from direct access for visitors, roles or users
 
@@ -36,6 +36,10 @@ For more information about how properly install and use it, refer to [How to Man
 2. Restrict access to media file while editing it
 
 == Changelog ==
+
+= 1.1.6 =
+* Fixed Bug: Incorrectly path comparisson on Windows servers [https://github.com/aamplugin/aam-protected-media-files/issues/3](https://github.com/aamplugin/aam-protected-media-files/issues/3)
+* Added New: Allow to hook into media search for other AAM add-ons [https://github.com/aamplugin/aam-protected-media-files/issues/4](https://github.com/aamplugin/aam-protected-media-files/issues/4)
 
 = 1.1.5 =
 * Fixed Bug: URI Access service does not work on NGINX servers [https://github.com/aamplugin/advanced-access-manager/issues/33](https://github.com/aamplugin/advanced-access-manager/issues/33)

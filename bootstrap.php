@@ -3,7 +3,7 @@
 /**
  * Plugin Name: AAM Protected Media Files
  * Description: Manage access to a physical file and prevent from a direct access
- * Version: 1.1.5
+ * Version: 1.1.6
  * Author: Vasyl Martyniuk <vasyl@vasyltech.com>
  * Author URI: https://vasyltech.com
  *
