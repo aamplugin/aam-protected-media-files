@@ -12,6 +12,7 @@ namespace AAM\AddOn\ProtectedMediaFiles;
 /**
  * File access handler
  *
+ * @since 1.1.6 Enhancement https://github.com/aamplugin/aam-protected-media-files/issues/4
  * @since 1.1.4 Fixed bug with incorrectly computed path when DOCUMENT_ROOT does not
  *              match actual physical path
  * @since 1.1.3 Fixed bug with not properly managed access when website is in
@@ -23,7 +24,7 @@ namespace AAM\AddOn\ProtectedMediaFiles;
  *
  * @package AAM\AddOn\ProtectedMediaFiles
  * @author Vasyl Martyniuk <vasyl@vasyltech.com>
- * @version 1.1.4
+ * @version 1.1.6
  */
 class Handler
 {
@@ -132,13 +133,14 @@ class Handler
      *
      * @return AAM_Core_Object_Post|null
      *
+     * @since 1.1.6 Enhancement https://github.com/aamplugin/aam-protected-media-files/issues/4
      * @since 1.1.3 Changed the way full path is computed
      * @since 1.1.1 Covered the edge case when file name is somename-nnnxnnn
      * @since 1.0.0 Initial implementation of the method
      *
      * @access protected
      * @global WPDB $wpdb
-     * @version 1.1.3
+     * @version 1.1.6
      */
     protected function findMedia()
     {
@@ -177,6 +179,13 @@ class Handler
                     "SELECT ID FROM {$wpdb->posts} WHERE guid LIKE %s",
                     array('%' . $s)
                 )
+            );
+        }
+
+        // Allow other add-ons to hook into the media search if none is found
+        if (empty($id)) {
+            $id = apply_filters(
+                'aam_find_media_id_filter', $id, $relpath_base, $relpath_full
             );
         }
 
