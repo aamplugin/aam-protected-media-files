@@ -12,6 +12,7 @@ namespace AAM\AddOn\ProtectedMediaFiles;
 /**
  * File access handler
  *
+ * @since 1.1.7 https://github.com/aamplugin/aam-protected-media-files/issues/6
  * @since 1.1.6 Enhancement https://github.com/aamplugin/aam-protected-media-files/issues/4
  * @since 1.1.4 Fixed bug with incorrectly computed path when DOCUMENT_ROOT does not
  *              match actual physical path
@@ -24,7 +25,7 @@ namespace AAM\AddOn\ProtectedMediaFiles;
  *
  * @package AAM\AddOn\ProtectedMediaFiles
  * @author Vasyl Martyniuk <vasyl@vasyltech.com>
- * @version 1.1.6
+ * @version 1.1.7
  */
 class Handler
 {
@@ -272,14 +273,17 @@ class Handler
      *
      * @return boolean
      *
+     * @since 1.1.7 https://github.com/aamplugin/aam-protected-media-files/issues/6
      * @since 1.1.6 Renamed from `isAllowed`
      * @since 1.0.0 Initial implementation of the method
      *
      * @access private
-     * @version 1.0.0
+     * @version 1.1.7
      */
     private function _isAllowed($filename)
     {
+        $response = true; // By default, allowing access to request file unless ...
+
         // Check if file extension is valid
         $type_check = wp_check_filetype(basename($filename));
         $location   = wp_get_upload_dir();
@@ -291,12 +295,16 @@ class Handler
             $upload_dir = WP_CONTENT_DIR . '/uploads';
         }
 
-        // Check if file is withing uploads directory
-        $isWithinUploads = (strpos($filename, realpath($upload_dir)) !== false);
+        // If file has invalid mime type, then do not take it into consideration.
+        // There is no way to define access to this file anyway
+        if (isset($type_check['ext']) && $type_check['ext'] !== false) {
+            // Check if file is withing uploads directory
+            $response = (strpos($filename, realpath($upload_dir)) !== false);
+        }
 
-        // Security checks. Making sure that file is located in the Uploads directory
+        // Security checks. Making sure that file is located in the uploads directory
         // and the file extension is valid to current WP instance
-        return !empty($type_check['ext']) && $isWithinUploads;
+        return $response;
     }
 
     /**
