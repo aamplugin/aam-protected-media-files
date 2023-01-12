@@ -112,7 +112,7 @@ class Handler
         } else {
             if ($media->is('restricted')) {
                 if (\AAM::api()->getConfig(
-                    'addon.protected-media-files.settings.deniedRedirect', false
+                    'core.service.denied-redirect.enabled', true
                 )) {
                     wp_die(
                         'Access Denied',
