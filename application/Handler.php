@@ -12,6 +12,7 @@ namespace AAM\AddOn\ProtectedMediaFiles;
 /**
  * File access handler
  *
+ * @since 1.2.0 https://github.com/aamplugin/aam-protected-media-files/issues/9
  * @since 1.1.7 https://github.com/aamplugin/aam-protected-media-files/issues/6
  * @since 1.1.6 Enhancement https://github.com/aamplugin/aam-protected-media-files/issues/4
  * @since 1.1.4 Fixed bug with incorrectly computed path when DOCUMENT_ROOT does not
@@ -25,7 +26,7 @@ namespace AAM\AddOn\ProtectedMediaFiles;
  *
  * @package AAM\AddOn\ProtectedMediaFiles
  * @author Vasyl Martyniuk <vasyl@vasyltech.com>
- * @version 1.1.7
+ * @version 1.2.0
  */
 class Handler
 {
@@ -55,11 +56,12 @@ class Handler
      *
      * @return void
      *
-     * @since 1.1.5 Fixed bug https://github.com/aamplugin/advanced-access-manager/issues/33
+     * @since 1.2.0 https://github.com/aamplugin/aam-protected-media-files/issues/7
+     * @since 1.1.5 https://github.com/aamplugin/advanced-access-manager/issues/33
      * @since 1.0.0 Initial implementation of the service
      *
      * @access protected
-     * @version 1.1.5
+     * @version 1.2.0
      */
     protected function __construct()
     {
@@ -83,7 +85,9 @@ class Handler
         }, 100, 3);
 
         // Stripping any query params
-        $this->request = ltrim(preg_replace('/(\?.*|#)$/', '', $request), '/');
+        $this->request = urldecode(
+            ltrim(preg_replace('/(\?.*|#)$/', '', $request), '/')
+        );
     }
 
     /**
@@ -134,7 +138,7 @@ class Handler
      *
      * @return AAM_Core_Object_Post|null
      *
-     * @since 1.1.6 Enhancement https://github.com/aamplugin/aam-protected-media-files/issues/4
+     * @since 1.1.6 https://github.com/aamplugin/aam-protected-media-files/issues/4
      * @since 1.1.3 Changed the way full path is computed
      * @since 1.1.1 Covered the edge case when file name is somename-nnnxnnn
      * @since 1.0.0 Initial implementation of the method
@@ -229,11 +233,12 @@ class Handler
      *
      * @return void
      *
-     * @since 1.1.6 Fixed https://github.com/aamplugin/aam-protected-media-files/issues/3
+     * @since 1.2.0 https://github.com/aamplugin/aam-protected-media-files/issues/9
+     * @since 1.1.6 https://github.com/aamplugin/aam-protected-media-files/issues/3
      * @since 1.0.0 Initial implementation of the method
      *
      * @access private
-     * @version 1.1.6
+     * @version 1.2.0
      */
     private function _outputFile($filename, $mime = null)
     {
@@ -256,6 +261,10 @@ class Handler
             header("Last-Modified: $last_modified GMT");
             header("ETag: {$etag}");
             header('Expires: ' . gmdate('D, d M Y H:i:s', time() + 100000000) . ' GMT');
+
+            if (defined('WP_DEBUG') && WP_DEBUG) {
+                header('X-Served-By: AAM Protected Media Files');
+            }
 
             // Finally read the file
             readfile($filename);
