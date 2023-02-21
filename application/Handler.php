@@ -242,6 +242,7 @@ class Handler
      */
     private function _outputFile($filename, $mime = null)
     {
+		$filename = urldecode($filename); // PATCH YB required in order for the plugin to work with accents in url [ pour fonctionnement des url avec accents ]
         if ($this->_isAllowed(realpath($filename))) {
             if (empty($mime)) {
                 if (function_exists('mime_content_type')) {
@@ -291,7 +292,8 @@ class Handler
      */
     private function _isAllowed($filename)
     {
-        $response = true; // By default, allowing access to request file unless ...
+        $response = false; // PATCH YB : secure file access, huge security hole, closed this after receiving several urgent alerts !! 
+						// true; // By default, allowing access to request file unless ...$response = true; // By default, allowing access to request file unless ...
 
         // Check if file extension is valid
         $type_check = wp_check_filetype(basename($filename));
