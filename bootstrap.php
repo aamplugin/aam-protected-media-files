@@ -3,7 +3,7 @@
 /**
  * Plugin Name: AAM Protected Media Files
  * Description: Manage access to a physical file and prevent from a direct access
- * Version: 1.2.0
+ * Version: 1.2.1
  * Author: Vasyl Martyniuk <vasyl@vasyltech.com>
  * Author URI: https://vasyltech.com
  *
@@ -78,8 +78,8 @@ class Bootstrap
     {
         if ($type === 'content') {
             $options['addon.protected-media-files.settings.deniedRedirect'] = array(
-                'title'       => __('Invoke Access Denied Redirect'),
-                'description' => __('By default, when access is denied, HTTP 401 (Unauthorized) response is returned. By enabling this option, a request will be redirected based on the Access Denied Redirect rule.'),
+                'title'       => __('Use Access Denied Redirect For Restricted Media Items'),
+                'description' => __('When direct access to a physical file is restricted, the default behavior is to return HTTP 401 (Unauthorized) response. If you enable this option, the Access Denied Redirect rule applies instead.'),
                 'value'       => \AAM::api()->getConfig(
                     'addon.protected-media-files.settings.deniedRedirect', false
                 )
