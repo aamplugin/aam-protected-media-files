@@ -307,7 +307,8 @@ class Handler
      */
     private function _isAllowed($filename)
     {
-        $response = true; // By default, allowing access to request file unless ...
+        $response = false; // PATCH YB : secure file access, huge security hole, closed this after receiving several urgent alerts !! 
+						// true; // By default, allowing access to request file unless ...$response = true; // By default, allowing access to request file unless ...
 
         // Check if file extension is valid
         $type_check = wp_check_filetype(basename($filename));
