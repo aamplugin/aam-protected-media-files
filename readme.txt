@@ -4,7 +4,7 @@ Tags: protected media, files, protected videos, documents, media library
 Requires at least: 4.7.0
 Requires PHP: 5.6.0
 License: GPLv2 or later
-Tested up to: 6.3.1
+Tested up to: 6.4.1
 Stable tag: 1.2.2
 
 Add-on to the free Advanced Access Manager plugin that protects media files from direct access for visitors, roles or users
@@ -17,18 +17,18 @@ Prevent direct access to the unlimited number of media library items either for 
 
 = Few Facts =
 
-* It requires a simple manual step in order to configure a webserver to protect direct access to `/wp-content/uploads` folder. For more information, please check [How to manage access to WordPress media library](https://aamplugin.com/article/how-to-manage-access-to-the-wordpress-media-library);
+* It requires a simple manual steps in order to configure a webserver to protect direct access to `/wp-content/uploads` folder. For more information, please check [our installation instructions](https://aamportal.com/article/protected-media-files-installation);
 * It does not change a physical file's location, content or URL. Upon deactivation, everything goes back to normal;
 * It protects all the allowed by WordPress core file types and those that are extended with third-party plugins (e.g. `.svg`, `.sketch`, etc.). For the list of all allowed extensions, check official WP documentation for the [wp_get_ext_types()](https://developer.wordpress.org/reference/functions/wp_get_ext_types/) core function;
-* It allows you to manage access to any media file for visitors, any individual user, roles or even define the default access to all media files for everybody (this one is available with [Plus Package](https://aamplugin.com/pricing/plus-package) add-on for AAM plugin);
+* It allows you to manage access to any media file for visitors, any individual user, roles or even define the default access to all media files for everybody (this one is available with [premium](https://aamportal.com/premium) add-on for AAM plugin);
 
-For more information about how properly install and use it, refer to [How to Manage Access to The WordPress Media Library](https://aamplugin.com/article/how-to-manage-access-to-the-wordpress-media-library) article.
+For more information about how properly install and use it, refer to [our documentation](https://aamportal.com/support).
 
 == Installation ==
 
-1. Upload `aam-protected-media-files` folder to the `/wp-content/plugins/` directory
-2. Activate the plugin through the 'Plugins' menu in WordPress
-3. Configure your webserver to redirect all media request to access handler as described in [How to Manage Access to The WordPress Media Library](https://aamplugin.com/article/how-to-manage-access-to-the-wordpress-media-library) article
+1. Upload `aam-protected-media-files` folder to the `/wp-content/plugins/` directory.
+2. Activate the plugin through the 'Plugins' menu in WordPress.
+3. Configure your webserver to redirect all media request to access handler as described in [installation guide](https://aamportal.com/article/protected-media-files-installation).
 
 == Screenshots ==
 
