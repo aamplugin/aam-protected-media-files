@@ -12,9 +12,13 @@ namespace AAM\AddOn\ProtectedMediaFiles;
 /**
  * File access handler
  *
+ * @since 1.2.2 https://github.com/aamplugin/aam-protected-media-files/issues/12
+ *              https://github.com/aamplugin/aam-protected-media-files/issues/13
+ *              https://github.com/aamplugin/aam-protected-media-files/issues/14
+ *              https://github.com/aamplugin/aam-protected-media-files/issues/15
  * @since 1.2.0 https://github.com/aamplugin/aam-protected-media-files/issues/9
  * @since 1.1.7 https://github.com/aamplugin/aam-protected-media-files/issues/6
- * @since 1.1.6 Enhancement https://github.com/aamplugin/aam-protected-media-files/issues/4
+ * @since 1.1.6 https://github.com/aamplugin/aam-protected-media-files/issues/4
  * @since 1.1.4 Fixed bug with incorrectly computed path when DOCUMENT_ROOT does not
  *              match actual physical path
  * @since 1.1.3 Fixed bug with not properly managed access when website is in
@@ -26,7 +30,7 @@ namespace AAM\AddOn\ProtectedMediaFiles;
  *
  * @package AAM\AddOn\ProtectedMediaFiles
  * @author Vasyl Martyniuk <vasyl@vasyltech.com>
- * @version 1.2.0
+ * @version 1.2.2
  */
 class Handler
 {
@@ -95,6 +99,7 @@ class Handler
      *
      * @return void
      *
+     * @since 1.2.2 https://github.com/aamplugin/aam-protected-media-files/issues/15
      * @since 1.1.3 Changed the way full path is computed
      * @since 1.1.2 Fixed bug with incorrectly returned image size
      * @since 1.1.1 Fixed issue with incorrectly redirected user when access is
@@ -103,12 +108,12 @@ class Handler
      * @since 1.0.0 Initial implementation of the method
      *
      * @access public
-     * @version 1.1.3
+     * @version 1.2.2
      */
     public function authorize()
     {
         // First, let's check if URI is restricted
-        \AAM_Service_Uri::getInstance()->authorizeUri();
+        \AAM_Service_Uri::getInstance()->authorizeUri('/' . $this->request);
 
         $media = $this->findMedia();
 
@@ -204,12 +209,13 @@ class Handler
      *
      * @return string
      *
+     * @since 1.2.2 https://github.com/aamplugin/aam-protected-media-files/issues/14
      * @since 1.1.4 Fixed bug with incorrectly computed physical path if DOCUMENT_ROOT
      *              does not match actual physical path
      * @since 1.1.3 Initial implementation of the method
      *
      * @access private
-     * @version 1.1.4
+     * @version 1.2.2
      */
     private function _getFileFullpath()
     {
@@ -222,7 +228,14 @@ class Handler
             $request = $this->request;
         }
 
-        return ABSPATH . $request;
+        // To cover scenarios where the absolute path does not really reflect the
+        // actual path to the file (containerized WP instances).
+        $absdir = \AAM::api()->getConfig(
+            'addon.protected-media-files.settings.absolutePath',
+            ABSPATH
+        );
+
+        return $absdir . $request;
     }
 
     /**
@@ -233,16 +246,18 @@ class Handler
      *
      * @return void
      *
+     * @since 1.2.2 https://github.com/aamplugin/aam-protected-media-files/issues/13
      * @since 1.2.0 https://github.com/aamplugin/aam-protected-media-files/issues/9
      * @since 1.1.6 https://github.com/aamplugin/aam-protected-media-files/issues/3
      * @since 1.0.0 Initial implementation of the method
      *
      * @access private
-     * @version 1.2.0
+     * @version 1.2.2
      */
     private function _outputFile($filename, $mime = null)
     {
-		$filename = urldecode($filename); // PATCH YB required in order for the plugin to work with accents in url [ pour fonctionnement des url avec accents ]
+        $filename = realpath(urldecode($filename));
+
         if ($this->_isAllowed(realpath($filename))) {
             if (empty($mime)) {
                 if (function_exists('mime_content_type')) {
@@ -327,10 +342,13 @@ class Handler
      *
      * @return mixed
      *
+     * @since 1.2.2 https://github.com/aamplugin/aam-protected-media-files/issues/12
+     * @since 1.0.0 Initial implementation of the method
+     *
      * @access protected
-     * @version 1.0.0
+     * @version 1.2.2
      */
-    protected function getFromQuery($param, $filter = FILTER_DEFAULT, $options = null)
+    protected function getFromQuery($param, $filter = FILTER_DEFAULT, $options = 0)
     {
         $get = filter_input(INPUT_GET, $param, $filter, $options);
 
@@ -350,10 +368,13 @@ class Handler
      *
      * @return mixed
      *
+     * @since 1.2.2 https://github.com/aamplugin/aam-protected-media-files/issues/12
+     * @since 1.0.0 Initial implementation of the method
+     *
      * @access protected
-     * @version 1.0.0
+     * @version 1.2.2
      */
-    protected function getFromServer($param, $filter = FILTER_DEFAULT, $options = null)
+    protected function getFromServer($param, $filter = FILTER_DEFAULT, $options = 0)
     {
         $var = filter_input(INPUT_SERVER, $param, $filter, $options);
 

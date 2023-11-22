@@ -4,8 +4,8 @@ Tags: protected media, files, protected videos, documents, media library
 Requires at least: 4.7.0
 Requires PHP: 5.6.0
 License: GPLv2 or later
-Tested up to: 6.1.1
-Stable tag: 1.2.0
+Tested up to: 6.3.1
+Stable tag: 1.2.2
 
 Add-on to the free Advanced Access Manager plugin that protects media files from direct access for visitors, roles or users
 
@@ -36,6 +36,15 @@ For more information about how properly install and use it, refer to [How to Man
 2. Restrict access to media file while editing it
 
 == Changelog ==
+
+= 1.2.2 =
+* Fixed: Deprecated PHP warning [https://github.com/aamplugin/aam-protected-media-files/issues/12](https://github.com/aamplugin/aam-protected-media-files/issues/12)
+* Fixed: Handle files with encoded characters [https://github.com/aamplugin/aam-protected-media-files/issues/13](https://github.com/aamplugin/aam-protected-media-files/issues/13)
+* Fixed: NGINX hard redirect issue [https://github.com/aamplugin/aam-protected-media-files/issues/15](https://github.com/aamplugin/aam-protected-media-files/issues/15)
+* Added New: Allow the ability to override the ABSPATH [https://github.com/aamplugin/aam-protected-media-files/issues/14](https://github.com/aamplugin/aam-protected-media-files/issues/14)
+
+= 1.2.1 =
+* Changed: Renamed the 401 redirect option to "Use Access Denied Redirect For Restricted Media Items"
 
 = 1.2.0 =
 * Fixed Bug: Fails to serve files with special characters [https://github.com/aamplugin/aam-protected-media-files/issues/7](https://github.com/aamplugin/aam-protected-media-files/issues/7)
