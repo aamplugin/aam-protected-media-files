@@ -12,6 +12,7 @@ namespace AAM\AddOn\ProtectedMediaFiles;
 /**
  * File access handler
  *
+ * @since 1.2.3 https://github.com/aamplugin/aam-protected-media-files/issues/16
  * @since 1.2.2 https://github.com/aamplugin/aam-protected-media-files/issues/12
  *              https://github.com/aamplugin/aam-protected-media-files/issues/13
  *              https://github.com/aamplugin/aam-protected-media-files/issues/14
@@ -30,7 +31,7 @@ namespace AAM\AddOn\ProtectedMediaFiles;
  *
  * @package AAM\AddOn\ProtectedMediaFiles
  * @author Vasyl Martyniuk <vasyl@vasyltech.com>
- * @version 1.2.2
+ * @version 1.2.3
  */
 class Handler
 {
@@ -209,13 +210,14 @@ class Handler
      *
      * @return string
      *
+     * @since 1.2.3 https://github.com/aamplugin/aam-protected-media-files/issues/16
      * @since 1.2.2 https://github.com/aamplugin/aam-protected-media-files/issues/14
      * @since 1.1.4 Fixed bug with incorrectly computed physical path if DOCUMENT_ROOT
      *              does not match actual physical path
      * @since 1.1.3 Initial implementation of the method
      *
      * @access private
-     * @version 1.2.2
+     * @version 1.2.3
      */
     private function _getFileFullpath()
     {
@@ -235,7 +237,7 @@ class Handler
             ABSPATH
         );
 
-        return $absdir . $request;
+        return realpath($absdir . $request);
     }
 
     /**
@@ -246,19 +248,20 @@ class Handler
      *
      * @return void
      *
+     * @since 1.2.3 https://github.com/aamplugin/aam-protected-media-files/issues/16
      * @since 1.2.2 https://github.com/aamplugin/aam-protected-media-files/issues/13
      * @since 1.2.0 https://github.com/aamplugin/aam-protected-media-files/issues/9
      * @since 1.1.6 https://github.com/aamplugin/aam-protected-media-files/issues/3
      * @since 1.0.0 Initial implementation of the method
      *
      * @access private
-     * @version 1.2.2
+     * @version 1.2.3
      */
     private function _outputFile($filename, $mime = null)
     {
         $filename = realpath(urldecode($filename));
 
-        if ($this->_isAllowed(realpath($filename))) {
+        if (is_string($filename) && $this->_isAllowed(realpath($filename))) {
             if (empty($mime)) {
                 if (function_exists('mime_content_type')) {
                     $mime = mime_content_type($filename);
