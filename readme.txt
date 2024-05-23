@@ -5,7 +5,7 @@ Requires at least: 4.7.0
 Requires PHP: 5.6.0
 License: GPLv2 or later
 Tested up to: 6.5.3
-Stable tag: 1.2.3
+Stable tag: 1.2.4
 
 Add-on to the free Advanced Access Manager plugin that protects media files from direct access for visitors, roles or users
 
@@ -36,6 +36,10 @@ For more information about how properly install and use it, refer to [our docume
 2. Restrict access to media file while editing it
 
 == Changelog ==
+
+= 1.2.4 =
+* Fixed: Give the ability to serve files outside of the wp-content folder [https://github.com/aamplugin/aam-protected-media-files/issues/18](https://github.com/aamplugin/aam-protected-media-files/issues/18)
+* Fixed: Access is not correctly restricted for some paths [https://github.com/aamplugin/aam-protected-media-files/issues/17](https://github.com/aamplugin/aam-protected-media-files/issues/17)
 
 = 1.2.3 =
 * Fixed: Uncaught TypeError: mime_content_type(): Argument #1 [https://github.com/aamplugin/aam-protected-media-files/issues/16](https://github.com/aamplugin/aam-protected-media-files/issues/16)

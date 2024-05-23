@@ -12,6 +12,8 @@ namespace AAM\AddOn\ProtectedMediaFiles;
 /**
  * File access handler
  *
+ * @since 1.2.4 https://github.com/aamplugin/aam-protected-media-files/issues/17
+ *              https://github.com/aamplugin/aam-protected-media-files/issues/18
  * @since 1.2.3 https://github.com/aamplugin/aam-protected-media-files/issues/16
  * @since 1.2.2 https://github.com/aamplugin/aam-protected-media-files/issues/12
  *              https://github.com/aamplugin/aam-protected-media-files/issues/13
@@ -61,12 +63,13 @@ class Handler
      *
      * @return void
      *
+     * @since 1.2.4 https://github.com/aamplugin/aam-protected-media-files/issues/17
      * @since 1.2.0 https://github.com/aamplugin/aam-protected-media-files/issues/7
      * @since 1.1.5 https://github.com/aamplugin/advanced-access-manager/issues/33
      * @since 1.0.0 Initial implementation of the service
      *
      * @access protected
-     * @version 1.2.0
+     * @version 1.2.4
      */
     protected function __construct()
     {
@@ -75,7 +78,15 @@ class Handler
         if (is_numeric($media)) { // Redirecting with aam-media=1 query param
             $request = $this->getFromServer('REQUEST_URI');
         } else { // Otherwise, this is most likely Nginx redirect rule
-            $request = $media;
+            // Doing additional check to ensure that aam-check is not spoofed
+            $original = $this->getFromServer('REQUEST_URI');
+
+            if ($original === $media) {
+                $request = $media;
+            } else {
+                http_response_code(401);
+                exit;
+            }
         }
 
         // Hooking into URI Access Service
@@ -301,12 +312,13 @@ class Handler
      *
      * @return boolean
      *
+     * @since 1.2.4 https://github.com/aamplugin/aam-protected-media-files/issues/18
      * @since 1.1.7 https://github.com/aamplugin/aam-protected-media-files/issues/6
      * @since 1.1.6 Renamed from `isAllowed`
      * @since 1.0.0 Initial implementation of the method
      *
      * @access private
-     * @version 1.1.7
+     * @version 1.2.4
      */
     private function _isAllowed($filename)
     {
@@ -314,20 +326,11 @@ class Handler
 
         // Check if file extension is valid
         $type_check = wp_check_filetype(basename($filename));
-        $location   = wp_get_upload_dir();
-
-        // Get upload directory attributes
-        if (!empty($location['basedir'])) {
-            $upload_dir = $location['basedir'];
-        } else {
-            $upload_dir = WP_CONTENT_DIR . '/uploads';
-        }
 
         // If file has invalid mime type, then do not take it into consideration.
         // There is no way to define access to this file anyway
-        if (isset($type_check['ext']) && $type_check['ext'] !== false) {
-            // Check if file is withing uploads directory
-            $response = (strpos($filename, realpath($upload_dir)) !== false);
+        if (empty($type_check['ext'])) {
+            $response = false;
         }
 
         // Security checks. Making sure that file is located in the uploads directory
