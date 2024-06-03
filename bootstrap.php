@@ -3,7 +3,7 @@
 /**
  * Plugin Name: AAM Protected Media Files
  * Description: Manage access to a physical file and prevent from a direct access
- * Version: 1.2.4
+ * Version: 1.2.5
  * Author: Vasyl Martyniuk <vasyl@vasyltech.com>
  * Author URI: https://vasyltech.com
  *
@@ -138,8 +138,8 @@ class Bootstrap
 
         if (version_compare(PHP_VERSION, '5.6.40') === -1) {
             exit(__('PHP 5.6.40 or higher is required.'));
-        } elseif (version_compare($wp_version, '4.7.0') === -1) {
-            exit(__('WP 4.7.0 or higher is required.'));
+        } elseif (version_compare($wp_version, '5.0.0') === -1) {
+            exit(__('WP 5.0.0 or higher is required.'));
         }
     }
 

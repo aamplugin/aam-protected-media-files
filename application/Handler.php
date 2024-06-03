@@ -78,15 +78,16 @@ class Handler
         if (is_numeric($media)) { // Redirecting with aam-media=1 query param
             $request = $this->getFromServer('REQUEST_URI');
         } else { // Otherwise, this is most likely Nginx redirect rule
-            // Doing additional check to ensure that aam-check is not spoofed
-            $original = $this->getFromServer('REQUEST_URI');
+            $request = $media;
+            // // Doing additional check to ensure that aam-check is not spoofed
+            // $original = $this->getFromServer('REQUEST_URI');
 
-            if ($original === $media) {
-                $request = $media;
-            } else {
-                http_response_code(401);
-                exit;
-            }
+            // if ($original === $media) {
+            //     $request = $media;
+            // } else {
+            //     http_response_code(401);
+            //     exit;
+            // }
         }
 
         // Hooking into URI Access Service
