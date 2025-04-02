@@ -4,8 +4,8 @@ Tags: protected media, files, protected videos, documents, media library
 Requires at least: 4.7.0
 Requires PHP: 5.6.0
 License: GPLv2 or later
-Tested up to: 6.5.3
-Stable tag: 1.2.5
+Tested up to: 6.7.2
+Stable tag: 1.3.0
 
 Add-on to the free Advanced Access Manager plugin that protects media files from direct access for visitors, roles or users
 
@@ -36,6 +36,9 @@ For more information about how properly install and use it, refer to [our docume
 2. Restrict access to media file while editing it
 
 == Changelog ==
+
+= 1.3.0 =
+* Added: Introduced updated to support upcoming AAM 7 version
 
 = 1.2.5 =
 * Changed: Bumped up the minimum required WP version to 5.0.0

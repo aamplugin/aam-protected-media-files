@@ -9,44 +9,25 @@
 
 namespace AAM\AddOn\ProtectedMediaFiles;
 
-use AAM_Service_Uri;
+use AAM;
 
 /**
  * File access handler
  *
- * @since 1.2.4 https://github.com/aamplugin/aam-protected-media-files/issues/17
- *              https://github.com/aamplugin/aam-protected-media-files/issues/18
- * @since 1.2.3 https://github.com/aamplugin/aam-protected-media-files/issues/16
- * @since 1.2.2 https://github.com/aamplugin/aam-protected-media-files/issues/12
- *              https://github.com/aamplugin/aam-protected-media-files/issues/13
- *              https://github.com/aamplugin/aam-protected-media-files/issues/14
- *              https://github.com/aamplugin/aam-protected-media-files/issues/15
- * @since 1.2.0 https://github.com/aamplugin/aam-protected-media-files/issues/9
- * @since 1.1.7 https://github.com/aamplugin/aam-protected-media-files/issues/6
- * @since 1.1.6 https://github.com/aamplugin/aam-protected-media-files/issues/4
- * @since 1.1.4 Fixed bug with incorrectly computed path when DOCUMENT_ROOT does not
- *              match actual physical path
- * @since 1.1.3 Fixed bug with not properly managed access when website is in
- *              subfolder
- * @since 1.1.2 Fixed bug with incorrectly returned image size
- * @since 1.1.1 Fixed couple bugs related to redirect and file finding
- * @since 1.1.0 Added deeper integration with AAM for access denied redirect
- * @since 1.0.0 Initial implementation of the class
- *
  * @package AAM\AddOn\ProtectedMediaFiles
  * @author Vasyl Martyniuk <vasyl@vasyltech.com>
- * @version 1.2.3
+ *
+ * @version 1.3.0
  */
-class Handler
+class HandlerV7
 {
     /**
      * Instance of itself
      *
-     * @var AAM\AddOn\ProtectedMediaFiles\Handler
-     *
+     * @var AAM\AddOn\ProtectedMediaFiles\HandlerV7
      * @access private
      *
-     * @version 1.0.0
+     * @version 1.3.0
      */
     private static $_instance = null;
 
@@ -54,9 +35,9 @@ class Handler
      * Requested file
      *
      * @var string
-     *
      * @access protected
-     * @version 1.0.0
+     *
+     * @version 1.3.0
      */
     protected $request;
 
@@ -64,37 +45,23 @@ class Handler
      * Initialize the access to files
      *
      * @return void
-     *
-     * @since 1.2.4 https://github.com/aamplugin/aam-protected-media-files/issues/17
-     * @since 1.2.0 https://github.com/aamplugin/aam-protected-media-files/issues/7
-     * @since 1.1.5 https://github.com/aamplugin/advanced-access-manager/issues/33
-     * @since 1.0.0 Initial implementation of the service
-     *
      * @access protected
-     * @version 1.2.4
+     *
+     * @version 1.3.0
      */
     protected function __construct()
     {
-        $media = $this->getFromQuery('aam-media');
+        $media = $this->get_from_query('aam-media');
 
         if (is_numeric($media)) { // Redirecting with aam-media=1 query param
-            $request = $this->getFromServer('REQUEST_URI');
+            $request = $this->get_from_server('REQUEST_URI');
         } else { // Otherwise, this is most likely Nginx redirect rule
             $request = $media;
-            // // Doing additional check to ensure that aam-check is not spoofed
-            // $original = $this->getFromServer('REQUEST_URI');
-
-            // if ($original === $media) {
-            //     $request = $media;
-            // } else {
-            //     http_response_code(401);
-            //     exit;
-            // }
         }
 
         // Hooking into URI Access Service
         add_filter('aam_uri_match_filter', function($match, $uri, $s) {
-            $media = $this->getFromQuery('aam-media');
+            $media = $this->get_from_query('aam-media');
 
             if (empty($match) && !empty($media)) {
                 $match = ($uri === $media);
@@ -113,42 +80,43 @@ class Handler
      * Authorize direct access to file
      *
      * @return void
-     *
-     * @since 1.2.2 https://github.com/aamplugin/aam-protected-media-files/issues/15
-     * @since 1.1.3 Changed the way full path is computed
-     * @since 1.1.2 Fixed bug with incorrectly returned image size
-     * @since 1.1.1 Fixed issue with incorrectly redirected user when access is
-     *              denied
-     * @since 1.1.0 Added the ability to invoke AAM Access Denied Redirect service
-     * @since 1.0.0 Initial implementation of the method
-     *
      * @access public
-     * @version 1.2.2
+     *
+     * @version 1.3.0
      */
     public function authorize()
     {
         // First, let's check if URI is restricted
-        AAM_Service_Uri::getInstance()->authorizeUri('/' . $this->request);
+        $service = AAM::api()->urls();
+        $uri     = '/' . $this->request;
 
-        $media = $this->findMedia();
+        if ($service->is_denied($uri)) {
+            $redirect = $service->get_redirect($uri);
+
+            if (empty($redirect) || $redirect['type'] === 'default') {
+                AAM::api()->redirect->do_access_denied_redirect();
+            } else {
+                AAM::api()->redirect->do_redirect($redirect);
+            }
+        }
+
+        // If there are no restrictions with URL service, then let's see if there are
+        // any defined with Content service
+        $media = $this->find_media_item();
 
         if ($media === null) { // File is not part of the Media library
-            $this->_outputFile($this->_getFileFullpath());
+            $this->_output_file_content($this->_prepare_file_absolute_path());
         } else {
-            if ($media->is('restricted')) {
-                if (\AAM::api()->getConfig(
-                    'addon.protected-media-files.settings.deniedRedirect', false
+            if (AAM::api()->posts()->is_restricted($media)) {
+                if (AAM::api()->config->get(
+                    'addon.protected_media_files.settings.denied_redirect', false
                 )) {
-                    wp_die(
-                        'Access Denied',
-                        'aam_access_denied',
-                        array('exit' => true)
-                    );
+                    AAM::api()->redirect->do_access_denied_redirect();
                 } else {
                     http_response_code(401); exit;
                 }
             } else {
-                $this->_outputFile($this->_getFileFullpath());
+                $this->_output_file_content($this->_prepare_file_absolute_path());
             }
         }
     }
@@ -156,25 +124,20 @@ class Handler
     /**
      * Find file based on the URI
      *
-     * @return AAM_Core_Object_Post|null
-     *
-     * @since 1.1.6 https://github.com/aamplugin/aam-protected-media-files/issues/4
-     * @since 1.1.3 Changed the way full path is computed
-     * @since 1.1.1 Covered the edge case when file name is somename-nnnxnnn
-     * @since 1.0.0 Initial implementation of the method
-     *
+     * @return WP_Post|null
      * @access protected
      * @global WPDB $wpdb
-     * @version 1.1.6
+     *
+     * @version 1.3.0
      */
-    protected function findMedia()
+    protected function find_media_item()
     {
         global $wpdb;
 
-        $file_path = $this->_getFileFullpath();
+        $file_path = $this->_prepare_file_absolute_path();
 
-        // 1. Replace the cropped extension for images
-        $s = preg_replace('/(-[\d]+x[\d]+)(\.[\w]+)$/', '$2', $file_path);
+        // 1. Get base path and use in the research
+        $s = basename($file_path);
 
         // 2. Replace the path to the media
         $basedir = wp_upload_dir();
@@ -185,24 +148,19 @@ class Handler
         $relpath_full = str_replace($basedir['basedir'], '', $file_path);
 
         $pm_query  = "SELECT post_id FROM {$wpdb->postmeta} WHERE meta_key = %s ";
-        $pm_query .= "AND (meta_value = %s OR meta_value = %s)";
+        $pm_query .= "AND meta_value LIKE %s";
 
-        $id = $wpdb->get_var(
-            $wpdb->prepare(
-                $pm_query,
-                array(
-                    '_wp_attached_file',
-                    ltrim($relpath_base, '/'),
-                    ltrim($relpath_full, '/')
-                )
-            )
-        );
+        $id = $wpdb->get_var($wpdb->prepare($pm_query, [
+            '_wp_attachment_metadata',
+            '%:"' . $s . '";%'
+        ]));
 
         if (empty($id)) { // Try to find the image by GUID
             $id = $wpdb->get_var(
                 $wpdb->prepare(
                     "SELECT ID FROM {$wpdb->posts} WHERE guid LIKE %s",
-                    array('%' . $s)
+                    // Replace the cropped extension for images
+                    [ '%' . preg_replace('/(-[\d]+x[\d]+)(\.[\w]+)$/', '$2', $file_path) ]
                 )
             );
         }
@@ -214,29 +172,21 @@ class Handler
             );
         }
 
-        return ($id ? \AAM::getUser()->getObject(
-            \AAM_Core_Object_Post::OBJECT_TYPE, $id) : null
-        );
+        return $id ? get_post($id) : null;
     }
 
     /**
      * Compute correct physical location to the file
      *
      * @return string
-     *
-     * @since 1.2.3 https://github.com/aamplugin/aam-protected-media-files/issues/16
-     * @since 1.2.2 https://github.com/aamplugin/aam-protected-media-files/issues/14
-     * @since 1.1.4 Fixed bug with incorrectly computed physical path if DOCUMENT_ROOT
-     *              does not match actual physical path
-     * @since 1.1.3 Initial implementation of the method
-     *
      * @access private
-     * @version 1.2.3
+     *
+     * @version 1.3.0
      */
-    private function _getFileFullpath()
+    private function _prepare_file_absolute_path()
     {
         // Get the sub dir path if website is located in subdirectory
-        $sub_folder = ltrim(dirname($this->getFromServer('PHP_SELF')), '/');
+        $sub_folder = ltrim(dirname($this->get_from_server('PHP_SELF')), '/');
 
         if (strpos($this->request, $sub_folder . '/') === 0) {
             $request = substr($this->request, strlen($sub_folder) + 1);
@@ -246,8 +196,8 @@ class Handler
 
         // To cover scenarios where the absolute path does not really reflect the
         // actual path to the file (containerized WP instances).
-        $absdir = \AAM::api()->getConfig(
-            'addon.protected-media-files.settings.absolutePath',
+        $absdir = AAM::api()->config->get(
+            'addon.protected_media_files.settings.absolute_path',
             ABSPATH
         );
 
@@ -261,21 +211,15 @@ class Handler
      * @param string|null $mime
      *
      * @return void
-     *
-     * @since 1.2.3 https://github.com/aamplugin/aam-protected-media-files/issues/16
-     * @since 1.2.2 https://github.com/aamplugin/aam-protected-media-files/issues/13
-     * @since 1.2.0 https://github.com/aamplugin/aam-protected-media-files/issues/9
-     * @since 1.1.6 https://github.com/aamplugin/aam-protected-media-files/issues/3
-     * @since 1.0.0 Initial implementation of the method
-     *
      * @access private
-     * @version 1.2.3
+     *
+     * @version 1.3.0
      */
-    private function _outputFile($filename, $mime = null)
+    private function _output_file_content($filename, $mime = null)
     {
         $filename = realpath(urldecode($filename));
 
-        if (is_string($filename) && $this->_isAllowed($filename)) {
+        if (is_string($filename) && $this->_is_file_allowed($filename)) {
             if (empty($mime)) {
                 if (function_exists('mime_content_type')) {
                     $mime = mime_content_type($filename);
@@ -314,16 +258,11 @@ class Handler
      * @param string $filename
      *
      * @return boolean
-     *
-     * @since 1.2.4 https://github.com/aamplugin/aam-protected-media-files/issues/18
-     * @since 1.1.7 https://github.com/aamplugin/aam-protected-media-files/issues/6
-     * @since 1.1.6 Renamed from `isAllowed`
-     * @since 1.0.0 Initial implementation of the method
-     *
      * @access private
-     * @version 1.2.4
+     *
+     * @version 1.3.0
      */
-    private function _isAllowed($filename)
+    private function _is_file_allowed($filename)
     {
         $response = true; // By default, allowing access to request file unless ...
 
@@ -349,19 +288,18 @@ class Handler
      * @param int    $options
      *
      * @return mixed
-     *
-     * @since 1.2.2 https://github.com/aamplugin/aam-protected-media-files/issues/12
-     * @since 1.0.0 Initial implementation of the method
-     *
      * @access protected
-     * @version 1.2.2
+     *
+     * @version 1.3.0
      */
-    protected function getFromQuery($param, $filter = FILTER_DEFAULT, $options = 0)
+    protected function get_from_query($param, $filter = FILTER_DEFAULT, $options = 0)
     {
         $get = filter_input(INPUT_GET, $param, $filter, $options);
 
         if (is_null($get)) {
-            $get = filter_var($this->readFromArray($_GET, $param), $filter, $options);
+            $get = filter_var($this->_read_from_array(
+                $_GET, $param), $filter, $options
+            );
         }
 
         return $get;
@@ -375,21 +313,18 @@ class Handler
      * @param int    $options
      *
      * @return mixed
-     *
-     * @since 1.2.2 https://github.com/aamplugin/aam-protected-media-files/issues/12
-     * @since 1.0.0 Initial implementation of the method
-     *
      * @access protected
-     * @version 1.2.2
+     *
+     * @version 1.3.0
      */
-    protected function getFromServer($param, $filter = FILTER_DEFAULT, $options = 0)
+    protected function get_from_server($param, $filter = FILTER_DEFAULT, $options = 0)
     {
         $var = filter_input(INPUT_SERVER, $param, $filter, $options);
 
         // Cover the unexpected server issues (e.g. FastCGI may cause unexpected null)
         if (empty($var)) {
             $var = filter_var(
-                $this->readFromArray($_SERVER, $param), $filter, $options
+                $this->_read_from_array($_SERVER, $param), $filter, $options
             );
         }
 
@@ -405,11 +340,11 @@ class Handler
      * @param mixed  $default Default value
      *
      * @return mixed
+     * @access private
      *
-     * @access protected
-     * @version 1.0.0
+     * @version 1.3.0
      */
-    protected function readFromArray($array, $param, $default = null)
+    private function _read_from_array($array, $param, $default = null)
     {
         $value = $default;
 
@@ -434,10 +369,10 @@ class Handler
     /**
      * Bootstrap the handler
      *
-     * @return AAM\AddOn\ProtectedMediaFiles\Handler
-     *
+     * @return AAM\AddOn\ProtectedMediaFiles\HandlerV7
      * @access public
-     * @version 1.0.0
+     *
+     * @version 1.3.0
      */
     public static function bootstrap()
     {
