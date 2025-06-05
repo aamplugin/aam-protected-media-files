@@ -150,17 +150,17 @@ class HandlerV7
         $pm_query  = "SELECT post_id FROM {$wpdb->postmeta} WHERE meta_key = %s ";
         $pm_query .= "AND meta_value LIKE %s";
 
-        $id = $wpdb->get_var($wpdb->prepare($pm_query, [
+        $id = $wpdb->get_var($wpdb->prepare($pm_query,
             '_wp_attachment_metadata',
-            '%:"' . $s . '";%'
-        ]));
+            '%:"' . $wpdb->esc_like($s) . '";%'
+        ));
 
         if (empty($id)) { // Try to find the image by GUID
             $id = $wpdb->get_var(
                 $wpdb->prepare(
                     "SELECT ID FROM {$wpdb->posts} WHERE guid LIKE %s",
                     // Replace the cropped extension for images
-                    [ '%' . preg_replace('/(-[\d]+x[\d]+)(\.[\w]+)$/', '$2', $file_path) ]
+                    [ '%' . preg_replace('/(-[\d]+x[\d]+)(\.[\w]+)$/', '$2', $relpath_base) ]
                 )
             );
         }

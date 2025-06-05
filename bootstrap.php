@@ -3,7 +3,7 @@
 /**
  * Plugin Name: AAM Protected Media Files
  * Description: Manage access to a physical file and prevent from a direct access
- * Version: 1.3.0
+ * Version: 1.3.2
  * Author: Vasyl Martyniuk <vasyl@vasyltech.com>
  * Author URI: https://vasyltech.com
  *
@@ -187,7 +187,7 @@ class Bootstrap
 
 if (defined('ABSPATH')) {
     // Init hook
-    add_action('init', __NAMESPACE__ . '\Bootstrap::on_init', PHP_INT_MAX);
+    add_action('wp_loaded', __NAMESPACE__ . '\Bootstrap::on_init', PHP_INT_MAX);
 
     // Activation hooks
     register_activation_hook(__FILE__, __NAMESPACE__ . '\Bootstrap::activate');
